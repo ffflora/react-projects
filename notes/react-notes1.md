@@ -8,7 +8,7 @@ Babel compiles JSX down to `React.createElement()` calls.
 
 These two examples are identical:
 
-```react
+```jsx
 const element = (
   <h1 className="greeting">
     Hello, world!
@@ -44,7 +44,7 @@ const element = {
 
 ```react
 const element = <h1>Hello, world</h1>;
-ReactDOM.render(element, document.getElementById('root'));//?
+ReactDOM.render(element, document.getElementById('root'));
 ```
 
 ## Updating the Rendered Element 
@@ -55,7 +55,7 @@ With our knowledge so far, the only way to update the UI is to create a new elem
 
 Consider this ticking clock example:
 
-```react
+```jsx
 function tick() {
   const element = (
     <div>
@@ -66,7 +66,7 @@ function tick() {
   ReactDOM.render(element, document.getElementById('root'));
 }
 
-setInterval(tick, 1000); // if I block this line won't show anything, why? 
+setInterval(tick, 1000);
 ```
 
 It calls `ReactDOM.render()` every second from a [`setInterval()`](https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/setInterval) callback.
@@ -77,13 +77,15 @@ It calls `ReactDOM.render()` every second from a [`setInterval()`](https://devel
 
 JavaScript function:
 
-```javascript
+```jsx
+// prefer this method 
+// function component
 function Welcome(props) {
   return <h1>Hello, {props.name}</h1>;
 }
 ```
 
-```javascript
+```jsx
 class Welcome extends React.Component {
   render() {
     return <h1>Hello, {this.props.name}</h1>;
@@ -97,15 +99,15 @@ The above two components are equivalent from React’s point of view.
 
 Elements can also represent user-defined components:
 
-```react
-const element = <Welcome name="Sara" />;
+```jsx
+const element = <Welcome name="Sara" /> //<.../> if component doesn't have any children, then can close like this
 ```
 
 When React sees an element representing a user-defined component, it  passes JSX attributes to this component as a single object. We call this object “props”.
 
 For example, this code renders “Hello, Sara” on the page:
 
-```react
+```jsx
 function Welcome(props) {
   return <h1>Hello, {props.name}</h1>;
 }
@@ -134,7 +136,7 @@ React treats components starting with lowercase letters as DOM **tags**.
 
 For example, we can create an `App` component that renders `Welcome` many times:
 
-```react
+```jsx
 function Welcome(props) {
   return <h1>Hello, {props.name}</h1>;
 }
@@ -157,11 +159,9 @@ ReactDOM.render(
 
 ## Extracting Components 
 
-Split components into smaller components:
+Split components into smaller components: consider this `Comment` component:
 
-For example, consider this `Comment` component:
-
-```react
+```jsx
 function Comment(props) {
   return (
     <div className="Comment">
@@ -169,7 +169,7 @@ function Comment(props) {
         <img className="Avatar"
           src={props.author.avatarUrl}
           alt={props.author.name}
-            /> //为什么可以这样 close? </...>...?
+            /> 
         <div className="UserInfo-name">
           {props.author.name}
         </div>
@@ -185,11 +185,9 @@ function Comment(props) {
 }
 ```
 
-It accepts `author` (an object), `text` (a string), and `date` (a date) as props, and describes a comment on a social media website.
+This component *<u>can be tricky to change because of all the nesting,  and it is also hard to reuse individual parts</u>* of it. 
 
-This component *<u>can be tricky to change because of all the nesting,  and it is also hard to reuse individual parts</u>* of it. Let’s extract a few components from it:
-
-```react
+```jsx
 function Avatar(props) {
   return (
     <img className="Avatar"
@@ -206,7 +204,7 @@ We recommend **naming props from the component’s own point of view** rather th
 function UserInfo(props){
     return (
     <div className = "UserInfo">
-        <Avatar user={props.user} />
+        <Avatar user={props.user} /> 
         <div className="UserInfo-name">
             {props.user.name} 
             </div>
@@ -217,11 +215,11 @@ function UserInfo(props){
 
 Then the `comment` gets simplified:
 
-```react
+```jsx
 function Comment(props) {
   return (
     <div className="Comment">
-      <UserInfo user={props.author} />
+      <UserInfo user={props.author} /> //pass  in a user props 
       <div className="Comment-text">
         {props.text}
       </div>
@@ -233,13 +231,11 @@ function Comment(props) {
 }
 ```
 
-A good rule of thumb is that if a part of your UI is used several times (`Button`, `Panel`, `Avatar`), or is complex enough on its own (`App`, `FeedStory`, `Comment`), it is a good candidate to be a reusable component.
-
 ## Props are Read-Only 
 
 Whether you declare a component [as a function or a class](https://reactjs.org/docs/components-and-props.html#function-and-class-components), it must never modify its own props. Consider this `sum` function:
 
-```react
+```jsx
 function sum(a, b) {
   return a + b;
 }
@@ -247,9 +243,10 @@ function sum(a, b) {
 
 Such functions are called [“pure”](https://en.wikipedia.org/wiki/Pure_function) because they do not attempt to change their inputs, and always return the same result for the same inputs.
 
-In contrast, this function is impure because it changes its own input:
+In contrast, this function is **impure** because it changes its own input:
 
-```react
+```jsx
+// this is not recommended in react 
 function withdraw(account, amount) {
   account.total -= amount;
 }
@@ -263,7 +260,7 @@ React is pretty flexible but it has a single strict rule:
 
 Consider the `tick` example mentioned above, we will now learn how to make the `Clock` component truly reusable and encapsulated.
 
-```react
+```jsx
 function Clock(props){
     return(
       <div>
@@ -283,19 +280,20 @@ function tick(){
 
 You can convert a function component like `Clock` to a class in five steps:
 
-1. Create an [ES6 class](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Classes), with the same name, that extends `React.Component`.
+1. Create an [ES6 class](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Classes), that extends `React.Component`. 
 2. Add a single empty method to it called `render()`.
 3. Move the body of the function into the `render()` method.
 4. Replace `props` with `this.props` in the `render()` body.
 5. Delete the remaining empty function declaration.
 
-```react
-class Clock extends React.Component {
+```jsx
+//react.component already has lots of lifecycle functions
+class Clock extends React.Component { // doesn't need (props), but it will need props as a member in the class
   render() {
     return (
       <div>
         <h1>Hello, world!</h1>
-        <h2>It is {this.props.date.toLocaleTimeString()}.</h2>
+        <h2>It is {this.props.date.toLocaleTimeString()}.</h2> 
       </div>
     );
   }
@@ -306,17 +304,19 @@ But at this moment the function only a single instance of the `Clock` will be us
 
 ## Adding Local State to a Class 
 
+State that contains in the component is called local state.
+
 We will move the `date` from props to state in three steps:
 
 1. Replace `this.props.date` with `this.state.date` in the `render()` method:
 
-```react
+```jsx
 class Clock extends React.Component {
   render() {
     return (
       <div>
         <h1>Hello, world!</h1>
-        <h2>It is {this.state.date.toLocaleTimeString()}.</h2>
+        <h2>It is {this.state.date.toLocaleTimeString()}.</h2> //use states instead of props, and will assign states later, since props is read-only and state is mutable so we could make changes, as time is suppose to changes in this component. 
       </div>
     );
   }
@@ -325,41 +325,31 @@ class Clock extends React.Component {
 
 2. Add a [class constructor](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Classes#Constructor) that assigns the initial `this.state`:
 
-```react
+```jsx
 class Clock extends React.Component {
     //Note how we pass `props` to the base constructor:
-  constructor(props) {
-    super(props);										//???
-    this.state = {date: new Date()};
+  constructor(props) { //do some initialization here 
+    super(props);	// to inherent props from React.Component
+      //date is a state
+    this.state = {date: new Date()}; //Date() is a global variable       
   }
 
   render() {
     return (
       <div>
         <h1>Hello, world!</h1>
-        <h2>It is {this.state.date.toLocaleTimeString()}.</h2>
+        <h2>It is {this.state.date.toLocaleTimeString()}.</h2> //toLocaleTimeString() is a member function of Date()
       </div>
     );
   }
 }
 ```
 
-Class components should always call the base constructor with `props`.
+Class components should always call the base constructor with `props` first.
 
-3. Remove the `date` prop from the `<Clock />` element:
+3. Remove the `date` prop from the `<Clock />` element, and the code looks like this:
 
-```react
-ReactDOM.render(
-  <Clock />,
-  document.getElementById('root')
-);
-```
-
-We will later add the timer code back to the component itself.
-
-The result looks like this:
-
-```react
+```jsx
 class Clock extends React.Component {
   constructor(props) {
     super(props);
@@ -377,7 +367,7 @@ class Clock extends React.Component {
 }
 
 ReactDOM.render(
-  <Clock />,
+  <Clock />, //since Clock is a class now instead of a function 
   document.getElementById('root')
 );
 ```
@@ -388,57 +378,25 @@ Next, we’ll make the `Clock` set up its own timer and update itself every seco
 
 ## Adding Lifecycle Methods to a Class 
 
-We want to [set up a timer](https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/setInterval) whenever the `Clock` is rendered to the DOM for the first time. This is called “**mounting**” in React.
+We want to [set up a timer](https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/setInterval) whenever the `Clock` is rendered to the DOM for the first time. This is called “**mounting**” in React.  (0->1)
 
 We also want to [clear that timer](https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/clearInterval) whenever the DOM produced by the `Clock` is removed. This is called “**unmounting**” in React.
 
-(像 constructor destructor 一样吗？)
+![](http://projects.wojtekmaj.pl/react-lifecycle-methods-diagram/ogimage.201804100050.png)
 
-We can declare special methods on the component class to run some code when a component mounts and unmounts:
-
-```react
-class Clock extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {date: new Date()};
-  }
-
-  componentDidMount() {
-
-  }
-
-  componentWillUnmount() {
-
-  }
-
-  render() {
-    return (
-      <div>
-        <h1>Hello, world!</h1>
-        <h2>It is {this.state.date.toLocaleTimeString()}.</h2>
-      </div>
-    );
-  }
-}
-```
-
-These methods are called “**lifecycle methods**”.
+We can declare special methods on the component class to run some code when a component mounts and unmounts: These methods are called “**lifecycle methods**”.
 
 The `componentDidMount()` method runs after the component output has been rendered to the DOM. This is a good place to set up a timer:
 
-```react
-  componentDidMount() {
+```jsx
+  componentDidMount() { //is where you can load data 
       //we save the timer ID right on `this` (`this.timerID`).
-    this.timerID = setInterval(
-      () => this.tick(), 							//what happened to this syntax orz
-      1000
-    );
+    this.timerID = setInterval( //two params, first is a function, second is 1000
+      this.tick(),1000);
   }
 ```
 
-We will tear down the timer in the `componentWillUnmount()` lifecycle method:
-
-```react
+```jsx
   componentWillUnmount() {
     clearInterval(this.timerID);
   }
@@ -448,7 +406,7 @@ Finally, we will implement a method called `tick()` that the `Clock` component w
 
 It will use `this.setState()` to schedule updates to the component local state, and now the clock ticks every second.
 
-```react
+```jsx
 class Clock extends React.Component {
   constructor(props) {
     super(props);
@@ -493,10 +451,16 @@ ReactDOM.render(
 Let’s quickly recap what’s going on and the order in which the methods are called:
 
 1. When `<Clock />` is passed to `ReactDOM.render()`, React calls the **constructor** of the `Clock` component. Since `Clock` needs to display the current time, it initializes `this.state` with an object including the current time. We will later update this state.
+
 2. React then calls the `Clock` component’s `render()` method. This is how React learns <u>what should be displayed</u> on the screen. React then updates the DOM to match the `Clock`’s render output.
+
 3. When the `Clock` output is inserted in the DOM, React calls the `componentDidMount()` **lifecycle** method. Inside it, the `Clock` component asks the browser to set up a timer to call the component’s `tick()` method once a second. 
+
 4. Every second the browser calls the `tick()` method. Inside it, the `Clock` component schedules a UI update by calling `setState()` with an object containing the current time. Thanks to the `setState()` call, React knows the state has changed, and calls the `render()` method again to learn what should be on the screen. This time, `this.state.date` in the `render()` method will be different, and so the render output will include the updated time. React updates the DOM accordingly.
-5. If the `Clock` component is ever removed from the DOM, React calls the `componentWillUnmount()` lifecycle method so the timer is stopped. // 前半句，react 怎么知道什么时候 clock is removed? 
+
+5. If the `Clock` component is ever removed from the DOM, React calls the `componentWillUnmount()` lifecycle method so the timer is stopped.
+
+   Use a `if...else` statement to check if the clock component is removed from the DOM.
 
 ## Using State Correctly 
 
@@ -506,7 +470,7 @@ There are three things you should know about `setState()`.
 
 For example, this will not re-render a component:
 
-```react
+```jsx
 // Wrong
 this.state.comment = 'Hello';
 ```
@@ -520,8 +484,6 @@ this.setState({comment: 'Hello'});
 
 
 
-### 
-
 ### State Updates May Be Asynchronous 
 
 React may batch multiple `setState()` calls into a single update for performance.
@@ -530,7 +492,7 @@ Because `this.props` and `this.state` may be updated asynchronously, you should 
 
 For example, this code may fail to update the counter:
 
-```react
+```jsx
 // Wrong
 this.setState({
   counter: this.state.counter + this.props.increment,
@@ -539,47 +501,44 @@ this.setState({
 
 
 
-```react
+```jsx
 // Correct
-// That function will  receive the previous state as the first argument, and the props at the  time the update is applied as the second argument:
-this.setState((state, props) => ({
+// That function will receive the previous state as the first argument, and the props at the time the update is applied as the second argument:
+this.setState((state, props) => ({// these two are pre-props
   counter: state.counter + props.increment
 }));
 ```
 
-We used an [arrow function](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Functions/Arrow_functions) above, but it also works with regular functions:
 
-```react
-// Correct
-this.setState(function(state, props) {				// what the heck is going on here/??
+
+```jsx
+// Correct, this is equivalent as the previous one
+this.setState(function(state, props) { 
   return {
     counter: state.counter + props.increment
   };
 });
 ```
 
-### 
+
+
+
 
 ### State Updates are Merged 
 
-When you call `setState()`, React merges the object you provide into the current state.
-
-For example, your state may contain several independent variables:
-
-```react
+```jsx
   constructor(props) {
     super(props);
-    this.state = {
+    this.state = { // state contains several independent variables:
       posts: [],
       comments: []
     };
   }
 ```
 
-Then you can update them independently with separate `setState()` calls:
-
-```react
-  componentDidMount() {
+```jsx
+  //you can update them independently with separate `setState()` calls:
+componentDidMount() {
     fetchPosts().then(response => {
       this.setState({
         posts: response.posts
@@ -595,6 +554,4 @@ Then you can update them independently with separate `setState()` calls:
 ```
 
 The merging is shallow, so `this.setState({comments})` leaves `this.state.posts` intact, but completely replaces `this.state.comments`.
-
-## ---- till this point 我已经一个字母都看不进去了 下次再见 88
 

@@ -19,34 +19,23 @@ class Counter extends Component{
     }
   }
 
-  componentWillReceiveProps(nextProps){
-    console.log('enter ComponentWillReceiveProps '+ this.props.caption);
-  }
-
-  componentWillMount(){
-    console.log('enter ComponentWillMount '+ this.props.caption);
-  }
-
-  componentDidMount(){
-    console.log('enter ComponentDidMount '+ this.props.caption);
-  }
-
   onClickDecrementButton(){
-    this.setState({count:this.state.count-1});
+    this.updateCount(false);
   }
 
   onClickIncrementButton(){
-    this.setState({count:this.state.count+1});
+    this.updateCount(true);
   }
 
-  shouldComponentUpdate(nextProps,nextState){
-    return (nextProps.caption !== this.props.caption) ||
-    (nextState.count !== this.state.count);
+  updateCount(isIncrement){
+    const previousValue = this.state.count;
+    const newValue = isIncrement? previousValue + 1: previousValue - 1;
+    this.setState({count:newValue});
+    this.props.onUpdate(newValue,previousValue)
   }
-
 
   render(){
-    console.log('enter render '+ this.props.caption);
+
     const {caption} = this.props; //desctructuring assignment
     return(
       <div>
@@ -62,12 +51,14 @@ class Counter extends Component{
 //propTypes 检查只是一个辅助开发的功能，并不会改变组件的行为。
 Counter.propTypes = {
   caption: PropTypes.string.isRequired, //meaning this caption prop is required, not like initValue.
-  initValue: PropTypes.number
+  initValue: PropTypes.number,
+  onUpdate: PropTypes.func
 };
 
 
 Counter.defaultProps = {
-  initValue:0
+  initValue:0,
+  onUpdate: f => f, // a function that does nothing
 };
 
 export default Counter;

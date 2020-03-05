@@ -555,3 +555,10 @@ componentDidMount() {
 
 The merging is shallow, so `this.setState({comments})` leaves `this.state.posts` intact, but completely replaces `this.state.comments`.
 
+### **state or prop**?
+
+1. Check if this variable is getable via props from the Father components? If yes, then it is not a state. 
+2. Check if this variable is not changing in the whole lifecycle in the component, if yes, then it is not a state. 
+3. Is this variable could be calculated via other state or props? If yes, then it is not a state. 
+4. Could this variable be used in `render()`? If so, then it is not a state. 
+
